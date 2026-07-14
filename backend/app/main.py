@@ -1,11 +1,14 @@
+import os
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from dotenv import load_dotenv
 from .database import engine, Base, get_db
 from .schemas import HealthStatus
 from . import models
 
-# Create database tables
+load_dotenv()
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Postman Clone API", version="1.0.0")
@@ -16,11 +19,10 @@ app.include_router(runner.router)
 app.include_router(history.router)
 app.include_router(collections_env.router)
 
-# CORS setup
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+# CORS_ORIGINS is a comma-separated list in .env so individual deployments
+# can whitelist their own frontend URL without code changes.
+_raw_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
+origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
