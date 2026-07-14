@@ -77,7 +77,7 @@ function HighlightedInput({ value, onChange, placeholder, className }: {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full h-full bg-transparent px-3 py-2 text-xs font-mono text-zinc-100 focus:outline-none relative z-10 ${className}`}
+        className={`absolute inset-0 w-full h-full bg-transparent px-3 py-2 text-xs font-mono text-zinc-100 focus:outline-none z-10 ${className}`}
         style={{ color: "rgba(244, 244, 245, 0.95)", caretColor: "#FF5F1F" }}
       />
     </div>
