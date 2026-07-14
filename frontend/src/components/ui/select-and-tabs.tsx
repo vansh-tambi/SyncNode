@@ -124,7 +124,7 @@ export function Tabs({ className, children, value, onValueChange, defaultValue, 
   return (
     <div className={cn("flex flex-col h-full", className)} {...props}>
       {React.Children.map(children, (child) => {
-        if (React.isValidElement(child)) {
+        if (React.isValidElement(child) && typeof child.type !== "string") {
           return React.cloneElement(child as React.ReactElement<any>, {
             activeTab,
             onTabChange: handleTabChange,
@@ -146,7 +146,7 @@ export function TabsList({ className, children, activeTab, onTabChange, ...props
       {...props}
     >
       {React.Children.map(children, (child) => {
-        if (React.isValidElement(child)) {
+        if (React.isValidElement(child) && typeof child.type !== "string") {
           return React.cloneElement(child as React.ReactElement<any>, {
             active: activeTab === child.props.value,
             onClick: () => onTabChange?.(child.props.value),
