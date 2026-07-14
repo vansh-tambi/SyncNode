@@ -59,7 +59,7 @@ function HighlightedInput({ value, onChange, placeholder, className }: {
   const parts = value.split(/(\{\{[^}]+\}\})/g);
 
   return (
-    <div className="relative w-full h-9 bg-[#161622] border border-[#27273A] rounded-md focus-within:border-primary/50 overflow-hidden flex items-center">
+    <div className="relative w-full h-9 bg-[#161622] border border-[#27273A] rounded-md focus-within:border-primary/50 overflow-hidden">
       <div className={`absolute inset-0 px-3 py-2 text-xs font-mono pointer-events-none whitespace-pre overflow-hidden flex items-center text-transparent ${className}`}>
         {parts.map((part, i) => {
           if (part.startsWith("{{") && part.endsWith("}}")) {
