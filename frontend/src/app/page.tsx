@@ -59,8 +59,18 @@ function HighlightedInput({ value, onChange, placeholder, className }: {
   const parts = value.split(/(\{\{[^}]+\}\})/g);
 
   return (
-    <div className="relative w-full h-9 bg-[#161622] border border-[#27273A] rounded-md focus-within:border-primary/50 overflow-hidden">
-      <div className={`absolute inset-0 px-3 py-2 text-xs font-mono pointer-events-none whitespace-pre overflow-hidden flex items-center text-transparent ${className}`}>
+    <div className="relative w-full h-9">
+      {/* Real interactive input element */}
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`w-full h-full bg-[#161622] border border-[#27273A] rounded-md px-3 py-2 text-xs font-mono text-zinc-100 focus:outline-none focus:border-primary/50 ${className || ""}`}
+        style={{ caretColor: "#FF5F1F" }}
+      />
+      {/* Visual highlight overlay, absolute layer positioned directly on top of the input */}
+      <div className="absolute inset-0 px-3 py-2 text-xs font-mono pointer-events-none whitespace-pre overflow-hidden text-transparent">
         {parts.map((part, i) => {
           if (part.startsWith("{{") && part.endsWith("}}")) {
             return (
@@ -69,17 +79,9 @@ function HighlightedInput({ value, onChange, placeholder, className }: {
               </span>
             );
           }
-          return <span key={i}>{part}</span>;
+          return <span key={i} className="opacity-0">{part}</span>;
         })}
       </div>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={`absolute inset-0 w-full h-full bg-transparent px-3 py-2 text-xs font-mono text-zinc-100 focus:outline-none z-10 ${className}`}
-        style={{ color: "rgba(244, 244, 245, 0.95)", caretColor: "#FF5F1F" }}
-      />
     </div>
   );
 }
@@ -814,22 +816,24 @@ export default function Home() {
                         {/* Action Bar */}
                         <div className="flex flex-col md:flex-row md:items-center gap-2 bg-[#161622] border border-[#27273A] rounded-lg p-2 focus-within:border-primary/50 transition-colors shrink-0">
                           <div className="flex items-center gap-2 flex-1">
-                            <Select value={selectedMethod} onValueChange={setSelectedMethod}>
-                              <SelectTrigger className="w-24 bg-transparent border-0 text-xs h-7 text-foreground font-bold shadow-none">
-                                {selectedMethod}
-                              </SelectTrigger>
-                              <SelectContent className="bg-[#161622] border-[#27273A]">
-                                {["GET", "POST", "PUT", "DELETE", "PATCH"].map((m) => (
-                                  <SelectItem key={m} value={m}>
-                                    <span className={`text-xs font-bold ${selectedMethod === m ? "text-primary" : ""}`}>
-                                      {m}
-                                    </span>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <div className="w-24 shrink-0">
+                              <Select value={selectedMethod} onValueChange={setSelectedMethod}>
+                                <SelectTrigger className="w-24 bg-transparent border-0 text-xs h-7 text-foreground font-bold shadow-none">
+                                  {selectedMethod}
+                                </SelectTrigger>
+                                <SelectContent className="bg-[#161622] border-[#27273A]">
+                                  {["GET", "POST", "PUT", "DELETE", "PATCH"].map((m) => (
+                                    <SelectItem key={m} value={m}>
+                                      <span className={`text-xs font-bold ${selectedMethod === m ? "text-primary" : ""}`}>
+                                        {m}
+                                      </span>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
                             <div className="h-6 w-px bg-[#27273A]" />
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                               <HighlightedInput
                                 value={urlInput}
                                 onChange={setUrlInput}
@@ -857,9 +861,9 @@ export default function Home() {
                               }>
                                 <DropdownMenuItem onClick={() => {
                                   setActiveRequestId(null);
-                                  setSaveRequestName(`${activeRequestName} Copy`);
+                                  setSaveRequestName(activeRequestName ? `${activeRequestName} Copy` : "New Outbound Request Copy");
                                   setShowSaveDialog(true);
-                                }} disabled={!activeRequestId}>
+                                }}>
                                   Save As...
                                 </DropdownMenuItem>
                               </DropdownMenu>
