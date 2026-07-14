@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from "react-resizable-panels";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, Play, Trash2, Folder, History as HistoryIcon, 
@@ -653,7 +653,7 @@ export default function Home() {
 
       {/* Workspace Area */}
       <main className="flex-1 flex min-h-0 relative">
-        <PanelGroup direction="horizontal">
+        <PanelGroup orientation="horizontal">
           {/* Left Sidebar */}
           {isSidebarOpen && (
             <Panel defaultSize={20} minSize={15} maxSize={30} className="flex flex-col border-r border-[#27273A] bg-[#12121A] overflow-hidden">
@@ -806,7 +806,7 @@ export default function Home() {
                   exit={{ opacity: 0 }}
                   className="flex-1 flex flex-col min-h-0"
                 >
-                  <PanelGroup direction="vertical">
+                  <PanelGroup orientation="vertical">
                     {/* Top Half: Request Builder */}
                     <Panel defaultSize={50} minSize={30} className="flex flex-col min-h-0 bg-[#12121A] p-4">
                       <div className="flex flex-col h-full space-y-4">
