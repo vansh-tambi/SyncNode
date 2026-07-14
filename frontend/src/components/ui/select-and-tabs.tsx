@@ -87,7 +87,7 @@ export function SelectContent({ className, children, open, onSelect, ...props }:
       {React.Children.map(children, (child) => {
         if (React.isValidElement<WithValue>(child)) {
           const elem = child as React.ReactElement<WithValue>;
-          return React.cloneElement(elem, {
+          return React.cloneElement(elem as React.ReactElement<any>, {
             onClick: () => onSelect?.(elem.props.value),
           });
         }
@@ -153,7 +153,7 @@ export function TabsList({ className, children, activeTab, onTabChange, ...props
       {React.Children.map(children, (child) => {
         if (React.isValidElement<WithValue>(child) && typeof child.type !== "string") {
           const elem = child as React.ReactElement<WithValue>;
-          return React.cloneElement(elem, {
+          return React.cloneElement(elem as React.ReactElement<any>, {
             active: activeTab === elem.props.value,
             onClick: () => onTabChange?.(elem.props.value),
           })
