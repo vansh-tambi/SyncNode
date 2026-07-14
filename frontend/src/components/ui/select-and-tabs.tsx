@@ -71,6 +71,10 @@ export function SelectValue({ placeholder, className, ...props }: any) {
   return <span className={cn("truncate", className)} {...props} />
 }
 
+interface WithValue {
+  value?: string
+}
+
 export function SelectContent({ className, children, open, onSelect, ...props }: any) {
   return (
     <div
@@ -81,7 +85,7 @@ export function SelectContent({ className, children, open, onSelect, ...props }:
       {...props}
     >
       {React.Children.map(children, (child) => {
-        if (React.isValidElement(child)) {
+        if (React.isValidElement<WithValue>(child)) {
           return React.cloneElement(child as React.ReactElement<any>, {
             onClick: () => onSelect?.(child.props.value),
           })
@@ -146,7 +150,7 @@ export function TabsList({ className, children, activeTab, onTabChange, ...props
       {...props}
     >
       {React.Children.map(children, (child) => {
-        if (React.isValidElement(child) && typeof child.type !== "string") {
+        if (React.isValidElement<WithValue>(child) && typeof child.type !== "string") {
           return React.cloneElement(child as React.ReactElement<any>, {
             active: activeTab === child.props.value,
             onClick: () => onTabChange?.(child.props.value),
