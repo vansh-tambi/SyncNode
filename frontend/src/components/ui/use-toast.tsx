@@ -1,4 +1,7 @@
+"use client";
+
 import * as React from "react"
+
 
 export interface Toast {
   id: string

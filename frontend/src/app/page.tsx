@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
-  Select, SelectTrigger, SelectValue, SelectContent, SelectItem 
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+  Tabs, TabsList, TabsTrigger, TabsContent
 } from "@/components/ui/select-and-tabs";
 import { DropdownMenu, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import Editor from "@monaco-editor/react";
