@@ -1,0 +1,23 @@
+# Databases
+*.db
+*.sqlite3
+
+# Python virtual environments & build artifacts
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node.js dependencies & Next.js build output
+node_modules/
+.next/
+out/
+build/
+.env*.local
+
+# Editor configs & system files
+.DS_Store
+.idea/
+.vscode/
+*.log
