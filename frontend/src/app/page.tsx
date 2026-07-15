@@ -15,6 +15,7 @@ import {
 import { DropdownMenu, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import Editor from "@monaco-editor/react";
 import { useToast } from "@/components/ui/use-toast";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://syncnode-muu3.onrender.com";
 
 interface KeyValuePair {
   id?: number;
@@ -172,9 +173,9 @@ export default function Home() {
   const fetchInitialData = async () => {
     try {
       const [colRes, envRes, histRes] = await Promise.all([
-        fetch("http://127.0.0.1:8000/api/collections"),
-        fetch("http://127.0.0.1:8000/api/environments"),
-        fetch("http://127.0.0.1:8000/api/history")
+        fetch(`${API_BASE_URL}/api/collections`),
+        fetch(`${API_BASE_URL}/api/environments`),
+        fetch(`${API_BASE_URL}/api/history`)
       ]);
 
       if (colRes.ok) setCollections(await colRes.json());
@@ -194,7 +195,7 @@ export default function Home() {
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/history");
+      const res = await fetch(`${API_BASE_URL}/api/history`);
       if (res.ok) setHistoryList(await res.json());
     } catch (e) {
       console.error(e);
@@ -203,7 +204,7 @@ export default function Home() {
 
   const clearHistory = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/history", { method: "DELETE" });
+      const res = await fetch(`${API_BASE_URL}/api/history`, { method: "DELETE" });
       if (res.ok) {
         setHistoryList([]);
         toast({ title: "History Cleared", description: "Successfully purged tracking DB logs.", variant: "success" });
@@ -299,7 +300,7 @@ export default function Home() {
   const handleCreateEnvironment = async () => {
     if (!newEnvName.trim()) return;
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/environments", {
+      const res = await fetch(`${API_BASE_URL}/api/environments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newEnvName.trim() })
@@ -320,7 +321,7 @@ export default function Home() {
   const handleAddEnvVariable = async () => {
     if (!editingEnv) return;
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/environments/${editingEnv.id}/variables`, {
+      const res = await fetch(`${API_BASE_URL}/api/environments/${editingEnv.id}/variables`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "new_var", value: "value", enabled: true })
@@ -339,7 +340,7 @@ export default function Home() {
   const handleUpdateEnvVariable = async (varId: number, key: string, value: string, enabled: boolean) => {
     if (!editingEnv) return;
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/environments/variables/${varId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/environments/variables/${varId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key, value, enabled })
@@ -359,7 +360,7 @@ export default function Home() {
   const handleDeleteEnvVariable = async (varId: number) => {
     if (!editingEnv) return;
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/environments/variables/${varId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/environments/variables/${varId}`, {
         method: "DELETE"
       });
       if (res.ok) {
@@ -390,7 +391,7 @@ export default function Home() {
       };
 
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/requests/${activeRequestId}`, {
+        const res = await fetch(`${API_BASE_URL}/api/requests/${activeRequestId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
@@ -398,7 +399,7 @@ export default function Home() {
 
         if (res.ok) {
           toast({ title: "Request Updated", description: "Successfully updated state in SQLite.", variant: "success" });
-          const colUpdate = await fetch("http://127.0.0.1:8000/api/collections");
+          const colUpdate = await fetch(`${API_BASE_URL}/api/collections`);
           if (colUpdate.ok) setCollections(await colUpdate.json());
         }
       } catch (e) {
@@ -413,7 +414,7 @@ export default function Home() {
     let colId = selectedColId;
     if (showNewColInput && newColName.trim()) {
       try {
-        const colRes = await fetch("http://127.0.0.1:8000/api/collections", {
+        const colRes = await fetch(`${API_BASE_URL}/api/collections`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: newColName.trim() })
@@ -452,7 +453,7 @@ export default function Home() {
     };
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/requests", {
+      const res = await fetch(`${API_BASE_URL}/api/requests`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -469,7 +470,7 @@ export default function Home() {
         setNewColName("");
         setShowNewColInput(false);
 
-        const colUpdate = await fetch("http://127.0.0.1:8000/api/collections");
+        const colUpdate = await fetch(`${API_BASE_URL}/api/collections`);
         if (colUpdate.ok) setCollections(await colUpdate.json());
       }
     } catch (e) {
@@ -482,8 +483,8 @@ export default function Home() {
     if (!renameTarget || !renameTarget.name.trim()) return;
     try {
       const url = renameTarget.type === "collection" 
-        ? `http://127.0.0.1:8000/api/collections/${renameTarget.id}`
-        : `http://127.0.0.1:8000/api/requests/${renameTarget.id}`;
+        ? `${API_BASE_URL}/api/collections/${renameTarget.id}`
+        : `${API_BASE_URL}/api/requests/${renameTarget.id}`;
 
       const res = await fetch(url, {
         method: "PATCH",
@@ -494,7 +495,7 @@ export default function Home() {
       if (res.ok) {
         toast({ title: "Item Renamed", description: `Updated name to: ${renameTarget.name}`, variant: "success" });
         setRenameTarget(null);
-        const colUpdate = await fetch("http://127.0.0.1:8000/api/collections");
+        const colUpdate = await fetch(`${API_BASE_URL}/api/collections`);
         if (colUpdate.ok) setCollections(await colUpdate.json());
       }
     } catch (e) {
@@ -507,8 +508,8 @@ export default function Home() {
     if (!confirmDeleteTarget) return;
     try {
       const url = confirmDeleteTarget.type === "collection"
-        ? `http://127.0.0.1:8000/api/collections/${confirmDeleteTarget.id}`
-        : `http://127.0.0.1:8000/api/requests/${confirmDeleteTarget.id}`;
+        ? `${API_BASE_URL}/api/collections/${confirmDeleteTarget.id}`
+        : `${API_BASE_URL}/api/requests/${confirmDeleteTarget.id}`;
 
       const res = await fetch(url, { method: "DELETE" });
       if (res.ok) {
@@ -521,7 +522,7 @@ export default function Home() {
         }
 
         setConfirmDeleteTarget(null);
-        const colUpdate = await fetch("http://127.0.0.1:8000/api/collections");
+        const colUpdate = await fetch(`${API_BASE_URL}/api/collections`);
         if (colUpdate.ok) setCollections(await colUpdate.json());
       }
     } catch (e) {
@@ -551,7 +552,7 @@ export default function Home() {
     };
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/runner/execute", {
+      const response = await fetch(`${API_BASE_URL}/api/runner/execute`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
