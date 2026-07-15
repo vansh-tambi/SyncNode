@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from "react-resizable-panels";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Plus, Settings, Terminal, Check, X, Layers, ShieldAlert, Trash2
+  Plus, Settings, Terminal, Check, X, ShieldAlert, Trash2, Sliders
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -12,10 +12,11 @@ import {
   Tabs, TabsList, TabsTrigger, TabsContent
 } from "@/components/ui/select-and-tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { Sidebar } from "@/components/workspace/Sidebar";
 import { ActionBar } from "@/components/workspace/ActionBar";
 import { RequestEditor } from "@/components/workspace/RequestEditor";
 import { ResponseViewer } from "@/components/workspace/ResponseViewer";
+import { CollectionsTab } from "@/components/workspace/CollectionsTab";
+import { HistoryTab } from "@/components/workspace/HistoryTab";
 import { HighlightedInput } from "@/components/workspace/HighlightedInput";
 import { DropdownMenu, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import Editor from "@monaco-editor/react";
@@ -55,8 +56,8 @@ export default function Home() {
   const [activeRequestName, setActiveRequestName] = useState<string>("");
   const [isRequestActive, setIsRequestActive] = useState<boolean>(false);
 
-  // Layout responsiveness
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // Main Tab Navigation
+  const [activeMainTab, setActiveMainTab] = useState<"workspace" | "collections" | "history">("workspace");
 
   // Collections & Environments
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -573,10 +574,7 @@ export default function Home() {
       {/* Top Bar */}
       <header className="flex h-14 items-center justify-between border-b border-border bg-background/80 backdrop-blur-md px-4 shrink-0 shadow-lg relative z-20">
         <div className="flex items-center gap-3">
-          <Button onClick={() => setIsSidebarOpen(!isSidebarOpen)} size="icon" variant="ghost" className="h-8 w-8 hover:bg-white/5 border border-border lg:hidden">
-            <Layers className="h-4 w-4 text-primary" />
-          </Button>
-          <div className="p-1.5 bg-primary/10 rounded-lg text-primary border border-primary/20 shadow-[0_0_10px_rgba(255,95,31,0.15)] hidden sm:block">
+          <div className="p-1.5 bg-primary/10 rounded-lg text-primary border border-primary/20 shadow-[0_0_10px_rgba(255,95,31,0.15)]">
             <Terminal className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
@@ -585,68 +583,94 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 w-64 sm:w-96">
+        {/* Center Navigation Tabs */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-secondary/50 border border-border/80 rounded-lg p-0.5 z-30">
+          {([
+            { id: "workspace", label: "Workspace" },
+            { id: "collections", label: "Collections" },
+            { id: "history", label: "History" }
+          ] as const).map((tab) => {
+            const isActive = activeMainTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveMainTab(tab.id)}
+                className={`text-xs px-3.5 py-1.5 rounded-md font-bold transition-all ${
+                  isActive 
+                    ? "bg-primary text-primary-foreground shadow-[0_0_8px_rgba(255,95,31,0.2)]" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                }`}
+              >
+                {tab.label.toUpperCase()}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center gap-4 w-64 sm:w-96 justify-end">
           <div className="text-xs text-muted-foreground font-mono whitespace-nowrap hidden sm:inline">ENV:</div>
-          <Select value={selectedEnvName} onValueChange={(val) => {
-            const found = environments.find(e => e.name === val);
-            if (found) setActiveEnvId(found.id);
-          }}>
-            <SelectTrigger className="w-full bg-secondary border-border text-xs h-8 text-foreground">
-              {selectedEnvName}
-            </SelectTrigger>
-            <SelectContent className="bg-secondary border-border">
-              {environments.map((env) => (
-                <SelectItem key={env.id} value={env.name}>
-                  {env.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={() => {
-            if (environments.length > 0) setEditingEnv(environments[0]);
-            setShowEnvModal(true);
-          }} size="icon" variant="ghost" className="h-8 w-8 hover:bg-white/5 border border-border shrink-0">
+          <div className="w-40">
+            <Select value={selectedEnvName} onValueChange={(val) => {
+              const found = environments.find(e => e.name === val);
+              if (found) setActiveEnvId(found.id);
+            }}>
+              <SelectTrigger className="w-full bg-secondary border-border text-xs h-8 text-foreground">
+                {selectedEnvName}
+              </SelectTrigger>
+              <SelectContent className="bg-secondary border-border">
+                {environments.map((env) => (
+                  <SelectItem key={env.id} value={env.name}>
+                    {env.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Environments Settings Gear */}
+          <Button 
+            onClick={() => {
+              if (environments.length > 0) setEditingEnv(environments[0]);
+              setShowEnvModal(true);
+            }} 
+            size="icon" 
+            variant="ghost" 
+            className="h-8 w-8 hover:bg-white/5 border border-border shrink-0 text-muted-foreground hover:text-foreground"
+            title="Environment Variables Configuration"
+          >
+            <Sliders className="h-4 w-4" />
+          </Button>
+
+          {/* Preferences System settings gear */}
+          <Button 
+            onClick={() => {
+              setActiveSettingsTab("themes");
+              setShowSettingsModal(true);
+            }} 
+            size="icon" 
+            variant="ghost" 
+            className="h-8 w-8 hover:bg-white/5 border border-border shrink-0 text-muted-foreground hover:text-foreground"
+            title="System Preferences"
+          >
             <Settings className="h-4 w-4" />
           </Button>
         </div>
       </header>
 
       {/* Workspace Area */}
-      <main className="flex-1 flex min-h-0 relative">
-        <PanelGroup orientation="horizontal">
-          {/* Left Sidebar */}
-          {isSidebarOpen && (
-            <Panel defaultSize={20} minSize={15} maxSize={30} className="flex flex-col border-r border-border bg-background overflow-hidden relative z-10">
-              <Sidebar 
-                collections={collections}
-                historyList={historyList}
-                activeRequestId={activeRequestId}
-                populateRequestState={populateRequestState}
-                setRenameTarget={setRenameTarget}
-                setConfirmDeleteTarget={setConfirmDeleteTarget}
-                clearHistory={clearHistory}
-                setApiResponse={setApiResponse}
-                setActiveSettingsTab={setActiveSettingsTab}
-                setShowSettingsModal={setShowSettingsModal}
-              />
-            </Panel>
-          )}
-
-          {isSidebarOpen && (
-            <PanelResizeHandle className="w-1 bg-border hover:bg-primary/50 transition-colors cursor-col-resize relative z-10" />
-          )}
-
-          {/* Main Content Area */}
-          <Panel className="flex flex-col min-w-0 bg-background relative">
-            <AnimatePresence mode="wait">
+      <main className="flex-1 flex min-h-0 relative bg-background">
+        <AnimatePresence mode="wait">
+          {activeMainTab === "workspace" && (
+            <motion.div
+              key="workspace-view"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.15 }}
+              className="flex-1 flex flex-col min-h-0"
+            >
               {isRequestActive ? (
-                <motion.div 
-                  key="active-workspace"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex-1 flex flex-col min-h-0 relative z-10 bg-background/50 backdrop-blur-sm"
-                >
+                <div className="flex-1 flex flex-col min-h-0 relative z-10 bg-background/50 backdrop-blur-sm">
                   {/* Action Bar */}
                   <div className="p-3 pb-0 shrink-0">
                     <ActionBar 
@@ -698,15 +722,9 @@ export default function Home() {
                       </Panel>
                     </PanelGroup>
                   </div>
-                </motion.div>
+                </div>
               ) : (
-                <motion.div 
-                  key="empty-workspace-canvas"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex-1 flex flex-col items-center justify-center bg-background text-foreground p-6 text-center relative select-none"
-                >
+                <div className="flex-1 flex flex-col items-center justify-center bg-background text-foreground p-6 text-center relative select-none">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--color-primary)_0%,transparent_60%)] opacity-10 pointer-events-none" />
                   
                   <div className="flex flex-col items-center max-w-sm gap-4 z-10">
@@ -749,11 +767,62 @@ export default function Home() {
                       <Plus className="h-4 w-4 mr-1.5" /> Create New Request
                     </Button>
                   </div>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
-          </Panel>
-        </PanelGroup>
+            </motion.div>
+          )}
+
+          {activeMainTab === "collections" && (
+            <motion.div
+              key="collections-view"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.15 }}
+              className="flex-1 flex flex-col min-h-0"
+            >
+              <CollectionsTab 
+                collections={collections}
+                populateRequestState={populateRequestState}
+                setRenameTarget={setRenameTarget}
+                setConfirmDeleteTarget={setConfirmDeleteTarget}
+                setActiveMainTab={(tab: any) => setActiveMainTab(tab)}
+                onCreateRequestClick={() => {
+                  setActiveRequestId(null);
+                  setActiveRequestName("New Outbound Request");
+                  setSelectedMethod("GET");
+                  setUrlInput("https://httpbin.org/get");
+                  setBodyContent("{\n  \n}");
+                  setHeaders([{ key: "", value: "", enabled: true }]);
+                  setQueryParams([{ key: "", value: "", enabled: true }]);
+                  setAuthType("none");
+                  setAuthToken("");
+                  setIsRequestActive(true);
+                  setActiveMainTab("workspace");
+                }}
+              />
+            </motion.div>
+          )}
+
+          {activeMainTab === "history" && (
+            <motion.div
+              key="history-view"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.15 }}
+              className="flex-1 flex flex-col min-h-0"
+            >
+              <HistoryTab 
+                historyList={historyList}
+                clearHistory={clearHistory}
+                populateRequestState={populateRequestState}
+                setApiResponse={setApiResponse}
+                setActiveMainTab={(tab: any) => setActiveMainTab(tab)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* dialog overlays */}
